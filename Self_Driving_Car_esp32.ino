@@ -35,18 +35,12 @@ void setup() {
 
 void loop() {
 
-  //Ultrasonic sensor - obstacle detection
-  digitalWrite(ultrasonicTrigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(ultrasonicTrigPin, LOW);
+ long distance = readUltrasonic(); //get distance in centimeters from ultrasonic sensor
 
-  long duration = pulseIn(ultrasonicEchoPin, HIGH);
-  int distance = duration / 29.1; //calculate distance in centimeters
-
-  if (distance < 4) { //stop if obstacle is too close
-    leftMotor.setSpeed(0);
-    rightMotor.setSpeed(0);
-    delay(100);
+  if (distance < 2.0) { //backward if obstacle is too close
+    goBackward();
+  } else if (distance < 5) {
+    turnRight();
   } else {
     //Move forward
     goForward();
@@ -61,8 +55,8 @@ void loop() {
 
   if (leftIRValue > threshold && rightIRValue > threshold) {
     //Both sensors detect white line
-    goBackward;
-    turnRight;
+    goBackward();
+    turnRight();
   } else if (leftIRValue > threshold) {
     //left sensor detects white line (turn right)
     turnRight();
@@ -92,25 +86,50 @@ void updateEncoder () {
   }
 }
 
-void goForward () {
+long readUltrasonic() {
+   //Send ultrasonic pulses
+  digitalWrite(ultrasonicTrigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(ultrasonicTrigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(ultrasonicTrigPin, LOW);
+
+  //measure echo duration
+  long duration = pulseIn(ultrasonicEchoPin, HIGH);
+  return duration * 0.034 / 2; //calculate distance in centimeters
+}
+
+void goForward() {
   leftMotor.setSpeed(150);
   rightMotor.setSpeed(150);
   leftMotor.run(FORWARD);
   rightMotor.run(FORWARD);
 }
 
-void stop() {
+void goBackward() {
   leftMotor.setSpeed(150);
   rightMotor.setSpeed(150);
-  delay(100);
+  leftMotor.run(BACKWARD);
+  rightMotor.run(BACKWARD);
+  delay(500);
+}
+
+void stop() {
+  leftMotor.setSpeed(0);
+  rightMotor.setSpeed(0));
+  delay(1000);
 }
 
 void turnRight() {
   //increase left motor speed
   leftMotor(200);
   rightMotor(150);
+  delay(500);
 }
 
 void turnLeft() {
-  
+  //increase right motor speed
+  leftMotor(150);
+  rightMotor(200);
+  delay(500);
 }
